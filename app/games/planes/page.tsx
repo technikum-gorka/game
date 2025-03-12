@@ -1,26 +1,13 @@
 "use client";
 import React, { useState, useEffect, useCallback, CSSProperties } from "react";
 
-interface Obstacle {
-  id: number;
-  x: number;
-  y: number;
-  type: "barrel" | "rocket" | "bird" | "health";
-  speed: number;
-}
-
-interface Bullet {
-  id: number;
-  x: number;
-  y: number;
-}
-
-const HITBOX_SIZE = 2;
+const HITBOX_SIZE = 5; // Changed from 2 to 5
 const PLAYER_SPEED = 0.5;
 const OBSTACLE_SPEED = 0.2;
 const BULLET_SPEED = 1;
 const HEALTH_SPAWN_CHANCE = 0.05; // 5% chance for health pickup
 const MAX_HP = 5; // Add this constant at the top with other constants
+const BULLET_SPAWN_CHANCE = 0.1;
 
 const commonStyle: CSSProperties = {
   position: "absolute",
@@ -30,7 +17,7 @@ const commonStyle: CSSProperties = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  fontSize: "20px",
+  fontSize: "50px", // Changed from 20px to 32px
 };
 
 const Page: React.FC = () => {
@@ -380,8 +367,8 @@ const Page: React.FC = () => {
             left: `${bullet.x}%`,
             top: `${bullet.y}%`,
             background: "yellow",
-            width: "5px",
-            height: "5px",
+            width: "10px", // Changed from 5px to 10px
+            height: "10px", // Changed from 5px to 10px
           }}
         />
       ))}
