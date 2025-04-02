@@ -8,5 +8,6 @@ namespace NodeJS {
         DATABASE_NAME: string;
         GOOGLE_CLIENT_ID: string;
         GOOGLE_CLIENT_SECRET: string;
+        NEXT_PUBLIC_BASE: string;
     }
 }
