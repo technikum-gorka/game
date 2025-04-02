@@ -1,6 +1,9 @@
 import type { User as BetterAuthUser } from 'better-auth/types'
 
-export interface User extends BetterAuthUser {}
+export interface User extends BetterAuthUser {
+    skin: string
+    unlockedSkins: string[]
+}
 
 export interface Game {
     id: string
@@ -10,4 +13,4 @@ export interface Game {
     category: string
     author: string
     isFavorite?: boolean
-  }
+}

@@ -72,6 +72,10 @@ export default function ProfileModal({ onClose }: ProfileModalProps) {
     }
   }
 
+  if (!session.user) {
+    return null
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
       <div
@@ -143,7 +147,7 @@ export default function ProfileModal({ onClose }: ProfileModalProps) {
                     <div className="flex justify-center">
                       <div className="w-40 h-40 bg-stone-700 rounded-lg border border-amber-700 flex items-center justify-center">
                         <img
-                          src="/placeholder.svg?height=150&width=150&text=Character"
+                          src={'/skin/' + session.user.id}
                           alt="Character"
                           className="pixelated"
                         />

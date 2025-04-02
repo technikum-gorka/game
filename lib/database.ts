@@ -10,7 +10,7 @@ export const pool = createPool({
 });
 
 export interface Database {
-    users: User;
+    user: User;
 }
 
 export const db = new Kysely<Database>({
