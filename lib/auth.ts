@@ -15,7 +15,31 @@ export const auth = betterAuth({
             skin: {
                 type: "string",
                 defaultValue: 'red',
-            }
+            },
+            power: {
+                type: 'number',
+                defaultValue: 1
+            },
+            agility: {
+                type: 'number',
+                defaultValue: 1
+            },
+            condition: {
+                type: 'number',
+                defaultValue: 1
+            },
+            intelligence: {
+                type: 'number',
+                defaultValue: 1
+            },
+            wisdom: {
+                type: 'number',
+                defaultValue: 1
+            },
+            charisma: {
+                type: 'number',
+                defaultValue: 1
+            },
         }
     }
 });
