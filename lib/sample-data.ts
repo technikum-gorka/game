@@ -10,6 +10,15 @@ export const games: Game[] = [
     author: "Efkey",
     isFavorite: true,
   },
+  {
+    id:"flappy-bird",
+    title: "Ptaszor",
+    description: "superowy ptasiek",
+    image:"",
+    category: "Zręcznościowa",
+    author: "Bevort",
+    isFavorite: true,
+  }
   // {
   //   id: "2",
   //   title: "Dragon Slayer",

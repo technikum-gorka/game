@@ -1,0 +1,305 @@
+:root {
+    --font-retro: 'Press Start 2P', cursive;
+  }
+  
+  body {
+    margin: 0;
+    font-family: var(--font-retro), sans-serif;
+    background-color: black;
+    display: flex;
+    align-items: center;
+  }
+  
+  .game-container {
+    position: relative;
+    width: 90vw;
+    max-width: 450px;
+    height: 700px;
+    background-image: url(/background.png);
+    background-position: center;
+    background-size: calc(100);
+    background-repeat: no-repeat;
+    overflow: hidden;
+    margin: 40px auto;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+  }
+  
+  .bird {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: yellow;
+    border: 2px solid #000;
+    border-radius: 50%;
+    left: 50px;
+    transition: top 0.05s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .pipe {
+    position: absolute;
+    width: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .pipe-body {
+    width: 70px;
+    background: linear-gradient(to bottom, #43a047, #2e7d32);
+    border: 1px solid #1b5e20;
+    border-radius: 6px;
+  }
+  
+  .start-text {
+    position: absolute;
+    top: 50%;
+    width: 90%;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    text-shadow: 1px 1px 2px white;
+    z-index: 10;
+    padding: 0 10px;
+  }
+  
+  .game-over {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+    z-index: 20;
+  }
+  
+  .game-over-text {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .score {
+    font-size: 20px;
+    margin-top: 15px;
+    position: absolute;
+    z-index: 999;
+  }
+  
+  .final-score {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  
+  button {
+    padding: 10px 20px;
+    font-size: 12px;
+    background-color: #2e7d32;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  button:hover {
+    background-color: #1b5e20;
+  }
+  
+  .health-bar {
+    position: absolute;
+    bottom: 10px;
+    left: 27%;
+    width: calc(50% - 20px);
+    height: 20px;
+    background: #444;
+    border: 1px solid #222;
+    border-radius: 6px;
+    overflow: hidden;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    font-family: sans-serif;
+  }
+  
+  .health-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(to right, #491818, #ff0000);
+    transition: width 0.3s ease-in-out;
+    z-index: -1;
+  }
+  
+  .health-text {
+    z-index: 2;
+  }
+  
+  /* 💡 NEW STYLES */
+  
+  .top-left,
+  .top-right {
+    position: absolute;
+    top: 10px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+  }
+  
+  .top-left {
+    left: 10px;
+    gap: 5px;
+  }
+  
+  .top-right {
+    right: 10px;
+    gap: 5px;
+    color: white;
+    font-size: 12px;
+  }
+  
+  .shop {
+    position: absolute;
+    z-index: 1100;
+    top: 0;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background: #f8f8f8;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    
+    font-family: var(--font-retro), sans-serif;
+    color: #222;
+  }
+  
+  .shop-scroll {
+    overflow-y: auto;
+    max-height: 500px;
+    width: 100%;
+    padding-right: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .shop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 0 10px;
+  }
+  
+  .shop-header h2 {
+    font-size: 14px;
+    color: #000;
+  }
+  
+  .shop-money {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    background: #e0e0e0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    margin-right: 30px;
+  }
+  
+  .upgrade-item {
+    background: #ffffff;
+    border: 2px dashed #2e7d32;
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .upgrade-item p {
+    margin: 5px 0;
+    font-size: 12px;
+    color: #222;
+  }
+  
+  .shop button {
+    margin-top: 10px;
+  }
+  
+  .close-shop {
+    margin-top: auto;
+    background-color: #b71c1c;
+    margin-right: 35px;
+  }
+  
+  .close-shop:hover {
+    background-color: #7f0000;
+  }
+  
+  .koszyk{
+    margin-right: 10px;
+    color: black;
+  }
+  
+  .textt{
+    color: black;
+    font-size: 15;
+  }
+  
+  @media (max-height: 800px) {
+    .shop-scroll{
+      margin-right: 25px;
+    }
+  }
+  
+  
+  
+  @media (max-height: 600px) {
+    .game-container {
+      height: 90vh;
+    }
+  }
+  
+  @media (max-width: 400px) {
+    .game-over-text,
+    .final-score {
+      font-size: 12px;
+    }
+  
+    .start-text {
+      font-size: 12px;
+    }
+  
+    button {
+      font-size: 10px;
+      padding: 8px 16px;
+    }
+  
+    .top-right span {
+      font-size: 10px;
+    }
+  
+    .shop-scroll{
+      margin-right: 15px;
+    }
+  }
+  
