@@ -1,0 +1,62 @@
+.controls {
+    width: 100%;
+  }
+  
+  .attackButtons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  
+  .attackButton {
+    position: relative;
+    padding: 15px 10px;
+    background-color: #ff4500 !important;
+    color: white !important;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px !important;
+    cursor: pointer;
+    transition: all 0.3s;
+    overflow: hidden;
+  }
+  
+  .attackButton:hover {
+    background-color: #e03e00 !important;
+  }
+  
+  .attackButton:hover .attackInfo {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .attackInfo {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.7) !important;
+    color: white !important;
+    padding: 5px;
+    font-size: 12px !important;
+    opacity: 0;
+    transform: translateY(100%);
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .cooldown {
+    background-color: #999 !important;
+    cursor: not-allowed;
+  }
+  
+  .cooldown:hover {
+    background-color: #999 !important;
+  }
+  
+  @media (max-width: 600px) {
+    .attackButtons {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }

@@ -10,6 +10,16 @@ export const games: Game[] = [
     author: "Efkey",
     isFavorite: true,
   },
+  {
+    id: "boxgame",
+    title: "Boxing clicker",
+    description:
+      "Zawalcz z coraz trudniejszymi przeciwnikami, używając power-upów i odpowiedniej taktyki.",
+    image: "",
+    category: "Fighting",
+    author: "Frodo",
+    isFavorite: true,
+  }
   // {
   //   id: "2",
   //   title: "Dragon Slayer",
