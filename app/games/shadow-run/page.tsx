@@ -1,254 +1,409 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { generateMaze } from './components/mazeGenerator';
+import GameStats from './components/GameStats';
+import Instructions from './components/Instructions';
+import GameOver from './components/GameOver';
+import GameBoard from './components/GameBoard';
+import DirectionalControls from './components/DirectionalControls';
+import Enemy from './components/Enemy';
+import Puzzle from './components/Puzzle';
 
-// Game constants
 const GRID_SIZE = 15;
-const CELL_SIZE = 40;
+const DEFAULT_CELL_SIZE = 40;
+const MIN_START_DISTANCE_FROM_ENEMY = 5;
 
-// Example walls -> will be randomly created in the final game
-const WALLS = [
-    // Outer walls
-    {x: 0, y: 0, w: GRID_SIZE, h: 1}, // Top
-    {x: 0, y: GRID_SIZE-1, w: GRID_SIZE, h: 1}, // Bottom
-    {x: 0, y: 0, w: 1, h: GRID_SIZE}, // Left
-    {x: GRID_SIZE-1, y: 0, w: 1, h: GRID_SIZE}, // Right
-
-    // Inner vertical walls
-    {x: 2, y: 2, w: 1, h: 6},
-    {x: 4, y: 4, w: 1, h: 5},
-    {x: 6, y: 2, w: 1, h: 3},
-    {x: 9, y: 1, w: 1, h: 8},
-    {x: 3, y: 1, w: 1, h: 1},
-    {x: 6, y: 6, w: 1, h: 7},
-    {x: 11, y: 8, w: 1, h: 5},
-    {x: 11, y: 2, w: 1, h: 5},
-    {x: 13, y: 1, w: 1, h: 5},
-    {x: 2, y: 9, w: 1, h: 5},
-    {x: 4, y: 12, w: 1, h: 2},
-    {x: 8, y: 4, w: 1, h: 4},
-    {x: 7, y: 9, w: 1, h: 2},
-    {x: 9, y: 12, w: 1, h: 2},
-    {x: 8, y: 12, w: 1, h: 1},
-    {x: 12, y: 11, w: 1, h: 2},
-    {x: 13, y: 9, w: 1, h: 1},
-    {x: 13, y: 7, w: 1, h: 1},
-
-
-    // Inner horizontal walls
-    {x: 2, y: 2, w: 6, h: 1},
-    {x: 3, y: 5, w: 2, h: 1},
-    {x: 4, y: 7, w: 3, h: 1},
-    {x: 8, y: 10, w: 4, h: 1},
-    {x: 2, y: 10, w: 3, h: 1},
-    {x: 12, y: 6, w: 2, h: 1},
-    {x: 2, y: 10, w: 3, h: 1},
-    {x: 2, y: 10, w: 3, h: 1},
-    
-];
-
-//Add this helper function after the WALLS constant
-const getRandomPosition = () => {
-    let newPos;
-    do {
-        newPos = {
-            x: Math.floor(Math.random() * (GRID_SIZE - 2)) + 1,
-            y: Math.floor(Math.random() * (GRID_SIZE - 2)) + 1
-        };
-    } while (isColliding(newPos));
-    return newPos;
+const getManhattanDistance = (pos1: { x: number, y: number }, pos2: { x: number, y: number }): number => {
+  return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y);
 };
 
-// Player initial position
-const INITIAL_PLAYER = { x: 1, y: 1 };
+export default function ShadowRunPage() {
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  const [isClientSide, setIsClientSide] = useState(false);
+  const [isGameActive, setIsGameActive] = useState(false);
+  const [gameOverReason, setGameOverReason] = useState<'time' | 'caught'>('time');
+  const [player, setPlayer] = useState({ x: 1, y: 1 });
+  const [mysteryPoint, setMysteryPoint] = useState(() => ({ x: 10, y: 10 }));
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [pointsCollected, setPointsCollected] = useState(0);
+  const [showInstructions, setShowInstructions] = useState(true);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [lastMoveDirection, setLastMoveDirection] = useState<'up' | 'down' | 'left' | 'right' | null>(null);
+  const [isPlayerTurn, setIsPlayerTurn] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [mazeKey, setMazeKey] = useState(0);
+  const [enemyPosition, setEnemyPosition] = useState({ x: GRID_SIZE - 2, y: GRID_SIZE - 2 });
+  const [dynamicCellSize, setDynamicCellSize] = useState(DEFAULT_CELL_SIZE);
+  const [walls, setWalls] = useState(() => generateMaze());
+  const [isPuzzleActive, setIsPuzzleActive] = useState(false);
+  const [isPuzzleRequired, setIsPuzzleRequired] = useState(false);
 
 
-const isColliding = (playerPos: {x: number, y: number}) => {
-    return WALLS.some(wall => {
-        return playerPos.x >= wall.x && 
-               playerPos.x < wall.x + wall.w && 
-               playerPos.y >= wall.y && 
-               playerPos.y < wall.y + wall.h;
-    });
-};
 
-const ShadowRunPage = () => {
-    const [player, setPlayer] = useState(INITIAL_PLAYER);
-    const [mysteryPoint, setMysteryPoint] = useState({ x: 13, y: 13 });
-    const [spellPower, setSpellPower] = useState(0);
-    const [score, setScore] = useState(0);
-    const [showInstructions, setShowInstructions] = useState(true);
-    const [timeLeft, setTimeLeft] = useState(30);
-    const [isGameOver, setIsGameOver] = useState(false);
-    const [pointsCollected, setPointsCollected] = useState(0);
+  useEffect(() => {
+    setIsClientSide(true);
+    setIsLargeScreen(window.innerWidth >= 1024);
+    const handleResize = () => {
+      setIsLargeScreen(window.innerWidth >= 1024);
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const orientation = vw > vh ? 'landscape' : 'portrait';
+      let maxBoardSize;
+      if (orientation === 'portrait') {
+        maxBoardSize = Math.min(vw - 32, vh * 0.6);
+      } else {
+        maxBoardSize = Math.min(vh - 200, vw * 0.6);
+      }
+      setDynamicCellSize(Math.floor(maxBoardSize / GRID_SIZE));
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-    // Update isMysteryPoint to use the mysteryPoint state
-    const isMysteryPoint = useCallback((playerPos: {x: number, y: number}) => {
-        return playerPos.x === mysteryPoint.x && playerPos.y === mysteryPoint.y;
-    }, [mysteryPoint]);
-
-    // Modify handleMysteryPoint to update mystery point position
-    const handleMysteryPoint = useCallback((newPos: {x: number, y: number}) => {
-        if (isMysteryPoint(newPos)) {
-            setScore(prev => prev + 100);
-            setPointsCollected(prev => prev + 1);
-            setMysteryPoint(getRandomPosition());
-        }
-    }, [isMysteryPoint]);
-
-    // Modify the handleMovement function
-    const handleMovement = useCallback((e: KeyboardEvent) => {
-        const key = e.key.toLowerCase();
-        setPlayer(prev => {
-            const newPos = { ...prev };
-            switch (key) {
-                case 'arrowup':
-                case 'w':
-                    newPos.y = Math.max(0, prev.y - 1);
-                    break;
-                case 'arrowdown':
-                case 's':
-                    newPos.y = Math.min(GRID_SIZE - 1, prev.y + 1);
-                    break;
-                case 'arrowleft':
-                case 'a':
-                    newPos.x = Math.max(0, prev.x - 1);
-                    break;
-                case 'arrowright':
-                case 'd':
-                    newPos.x = Math.min(GRID_SIZE - 1, prev.x + 1);
-                    break;
-            }
-            // Check for wall collision
-            const finalPos = isColliding(newPos) ? prev : newPos;
-            // Check for mystery point
-            handleMysteryPoint(finalPos);
-            return finalPos;
-        });
-    }, [handleMysteryPoint]);
-
-    // Set up keyboard listeners
-    useEffect(() => {
-        window.addEventListener('keydown', handleMovement);
-        return () => window.removeEventListener('keydown', handleMovement);
-    }, [handleMovement]);
-
-    // Add this after your existing useEffect
-    useEffect(() => {
-        if (!showInstructions && timeLeft > 0) {
-            const timer = setInterval(() => {
-                setTimeLeft(prev => prev - 1);
-            }, 1000);
-
-            return () => clearInterval(timer);
-        } else if (timeLeft === 0) {
-            setIsGameOver(true);
-        }
-    }, [timeLeft, showInstructions]);
-
-    return (
-        <main className="min-h-screen bg-gray-900 text-white p-8">
-            <h1 className='text-4xl font-bold text-center mb-8'>Shadow Run</h1>
-            
-            {/* Game Stats */}
-            <div className="flex justify-between mb-4">
-                <div>Score: {score}</div>
-                <div>Time Left: {timeLeft}s</div>
-                <div>Points Collected: {pointsCollected}</div>
-            </div>
-
-            {/* Game Grid */}
-            <div 
-                className="relative mx-auto border-2 border-gray-700"
-                style={{
-                    width: GRID_SIZE * CELL_SIZE,
-                    height: GRID_SIZE * CELL_SIZE,
-                }}
-            >
-                {/* Walls */}
-                {WALLS.map((wall, index) => (
-                    <div
-                        key={index}
-                        className="absolute bg-gray-700"
-                        style={{
-                            left: wall.x * CELL_SIZE,
-                            top: wall.y * CELL_SIZE,
-                            width: wall.w * CELL_SIZE,
-                            height: wall.h * CELL_SIZE,
-                        }}
-                    />
-                ))}
-                {/* Player */}
-                <div 
-                    className="absolute bg-blue-500 rounded-full transition-all duration-200"
-                    style={{
-                        width: CELL_SIZE - 4,
-                        height: CELL_SIZE - 4,
-                        left: player.x * CELL_SIZE + 2,
-                        top: player.y * CELL_SIZE + 2,
-                    }}
-                />
-                {/* Mystery Point */}
-                <div 
-                    className="absolute bg-yellow-500 rounded-full transition-all duration-200"
-                    style={{
-                        width: CELL_SIZE - 4,
-                        height: CELL_SIZE - 4,
-                        left: mysteryPoint.x * CELL_SIZE + 2,
-                        top: mysteryPoint.y * CELL_SIZE + 2,
-                    }}
-                />
-            </div>
-
-            {/* Instructions */}
-            {showInstructions && (
-                <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center">
-                    <div className="bg-gray-800 p-8 rounded-lg max-w-md">
-                        <h2 className="text-2xl mb-4">How to Play</h2>
-                        <ul className="list-disc pl-5 space-y-2">
-                            <li>Use arrow keys or WASD to move</li>
-                            <li>Avoid gray walls - you cannot pass through them</li>
-                            <li>Escape from guards</li>
-                            <li>Solve runic puzzles</li>
-                            <li>Collect power-ups</li>
-                        </ul>
-                        <button 
-                            className="mt-6 px-4 py-2 bg-blue-500 rounded"
-                            onClick={() => setShowInstructions(false)}
-                        >
-                            Start Game
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Game Over Popup */}
-            {isGameOver && (
-                <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center">
-                    <div className="bg-gray-800 p-8 rounded-lg max-w-md">
-                        <h2 className="text-2xl mb-4">Game Over!</h2>
-                        <div className="space-y-2">
-                            <p>Final Score: {score}</p>
-                            <p>Mystery Points Collected: {pointsCollected}</p>
-                            <p>Time's Up!</p>
-                        </div>
-                        <button 
-                            className="mt-6 px-4 py-2 bg-blue-500 rounded"
-                            onClick={() => {
-                                setTimeLeft(30);
-                                setScore(0);
-                                setPointsCollected(0);
-                                setPlayer(INITIAL_PLAYER);
-                                setMysteryPoint(getRandomPosition());
-                                setIsGameOver(false);
-                            }}
-                        >
-                            Play Again
-                        </button>
-                    </div>
-                </div>
-            )}
-        </main>
+  const isPositionValid = (pos: { x: number, y: number }, walls: any[]) => {
+    if (pos.x < 0 || pos.x >= GRID_SIZE || pos.y < 0 || pos.y >= GRID_SIZE) {
+      return false;
+    }
+    return !walls.some(wall =>
+      pos.x >= wall.x &&
+      pos.x < wall.x + wall.w &&
+      pos.y >= wall.y &&
+      pos.y < wall.y + wall.h
     );
-};
+  };
 
-export default ShadowRunPage;
+  const getRandomPosition = useCallback(() => {
+    const availablePositions = [];
+    for (let x = 1; x < GRID_SIZE - 1; x++) {
+      for (let y = 1; y < GRID_SIZE - 1; y++) {
+        const pos = { x, y };
+        if (isPositionValid(pos, walls)) {
+          availablePositions.push(pos);
+        }
+      }
+    }
+    if (availablePositions.length === 0) {
+      return { x: 1, y: 1 };
+    }
+    return availablePositions[Math.floor(Math.random() * availablePositions.length)];
+  }, [walls]);
+
+  const updateEnemyPosition = useCallback((pos: { x: number, y: number }) => {
+    setEnemyPosition(pos);
+  }, []);
+
+  const handleGameLose = useCallback(() => {
+    setIsGameOver(true);
+    setIsGameActive(false);
+    setGameOverReason('caught');
+    
+    // Resetuj stany zagadki
+    setIsPuzzleActive(false);
+    setIsPuzzleRequired(false);
+  }, []);
+  
+
+  const handleEnemyMoveComplete = useCallback(() => {
+    setIsPlayerTurn(true);
+  }, []);
+
+  const handlePointCollected = useCallback(() => {
+    if (!isPuzzleActive) {
+      setIsPuzzleActive(true);
+    }
+    setScore(prev => prev + 50);
+    setPointsCollected(prev => prev + 1);
+    setTimeLeft(prev => Math.min(prev + 5, 30));
+    setIsTransitioning(true);
+
+    setTimeout(() => {
+      const newWalls = generateMaze();
+
+      const currentPlayerPos = { ...player };
+      if (!isPositionValid(currentPlayerPos, newWalls)) {
+        const safePlayerPos = getRandomPosition();
+        setPlayer(safePlayerPos);
+      }
+
+      let safePointPos;
+      do {
+        safePointPos = getRandomPosition();
+      } while (
+        (safePointPos.x === player.x && safePointPos.y === player.y) ||
+        !isPositionValid(safePointPos, newWalls)
+      );
+
+      setMysteryPoint(safePointPos);
+      setMazeKey(prev => prev + 1);
+      setWalls(newWalls);
+
+      setIsTransitioning(false);
+      setIsPlayerTurn(true);
+    }, 1000);
+  }, [getRandomPosition, player]);
+
+  const handlePuzzleSolved = useCallback(() => {
+    setIsPuzzleActive(false);
+    setIsPuzzleRequired(false); 
+    setScore(prev => prev + 50);
+    setPointsCollected(prev => prev + 1);
+    setTimeLeft(prev => Math.min(prev + 5, 30));
+    setIsTransitioning(true);
+  
+    setTimeout(() => {
+      const newWalls = generateMaze();
+  
+      const currentPlayerPos = { ...player };
+      if (!isPositionValid(currentPlayerPos, newWalls)) {
+        const safePlayerPos = getRandomPosition();
+        setPlayer(safePlayerPos);
+      }
+  
+      let safePointPos;
+      do {
+        safePointPos = getRandomPosition();
+      } while (
+        (safePointPos.x === player.x && safePointPos.y === player.y) ||
+        !isPositionValid(safePointPos, newWalls)
+      );
+  
+      setMysteryPoint(safePointPos);
+      setMazeKey(prev => prev + 1);
+      setWalls(newWalls);
+  
+      setIsTransitioning(false);
+      setIsPlayerTurn(true);
+    }, 1000);
+  }, [getRandomPosition, player, isPositionValid]);
+  
+  const handlePuzzleFailed = useCallback(() => {
+    setIsPuzzleActive(false);
+    // Nie resetujemy isPuzzleRequired, ponieważ gracz nadal musi rozwiązać zagadkę
+    setIsPlayerTurn(false);
+    
+    // Po ruchu przeciwnika, ponownie aktywuj zagadkę
+    // ALE nie generuj nowego labiryntu ani nie zmieniaj pozycji punktu
+    setTimeout(() => {
+      setIsPuzzleActive(true);
+    }, 1000); // Daj czas na ruch przeciwnika
+  }, []);
+  
+  const handlePuzzleTimeout = useCallback(() => {
+    // Podobnie jak w przypadku niepowodzenia
+    setIsPuzzleActive(false);
+    setIsPlayerTurn(false);
+    
+    setTimeout(() => {
+      setIsPuzzleActive(true);
+    }, 1000);
+  }, []);
+  
+  const handleMovement = useCallback((e: KeyboardEvent) => {
+    if (!isGameActive || !isPlayerTurn || isTransitioning || isPuzzleActive || isPuzzleRequired) return;
+    const key = e.key.toLowerCase();
+    setPlayer(prev => {
+      const newPos = { ...prev };
+      let direction: 'up' | 'down' | 'left' | 'right' | null = null;
+      switch (key) {
+        case 'arrowup':
+        case 'w':
+          newPos.y = Math.max(0, prev.y - 1);
+          direction = 'up';
+          break;
+        case 'arrowdown':
+        case 's':
+          newPos.y = Math.min(GRID_SIZE - 1, prev.y + 1);
+          direction = 'down';
+          break;
+        case 'arrowleft':
+        case 'a':
+          newPos.x = Math.max(0, prev.x - 1);
+          direction = 'left';
+          break;
+        case 'arrowright':
+        case 'd':
+          newPos.x = Math.min(GRID_SIZE - 1, prev.x + 1);
+          direction = 'right';
+          break;
+        default:
+          return prev;
+      }
+      setLastMoveDirection(direction);
+      const finalPos = isPositionValid(newPos, walls) ? newPos : prev;
+      if (finalPos.x !== prev.x || finalPos.y !== prev.y) {
+        setIsPlayerTurn(false);
+        if (finalPos.x === mysteryPoint.x && finalPos.y === mysteryPoint.y) {
+          handlePointCollected();
+        }
+      }
+      return finalPos;
+    });
+  }, [isGameActive, mysteryPoint, walls, isPlayerTurn, isTransitioning, isPuzzleActive, isPuzzleRequired, handlePointCollected]);
+
+  const handleDirectionalControl = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
+    if (!isPlayerTurn || isTransitioning) return;
+    const keyMap = {
+      'up': 'ArrowUp',
+      'down': 'ArrowDown',
+      'left': 'ArrowLeft',
+      'right': 'ArrowRight'
+    };
+    const event = new KeyboardEvent('keydown', { key: keyMap[direction] });
+    handleMovement(event);
+  }, [handleMovement, isPlayerTurn, isTransitioning]);
+
+  useEffect(() => {
+    if (isGameActive && !isGameOver) {
+      window.addEventListener('keydown', handleMovement);
+      return () => {
+        window.removeEventListener('keydown', handleMovement);
+      };
+    }
+  }, [isGameActive, isGameOver, handleMovement]);
+
+  useEffect(() => {
+    if (isGameActive && !isGameOver && timeLeft > 0 && !isTransitioning) {
+      const timer = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    } else if (timeLeft <= 0 && isGameActive) {
+      setIsGameOver(true);
+      setIsGameActive(false);
+      setGameOverReason('time');
+    }
+  }, [timeLeft, isGameActive, isGameOver, isTransitioning]);
+
+  const handleStartGame = useCallback(() => {
+    setShowInstructions(false);
+    setTimeLeft(30);
+    setScore(0);
+    setPointsCollected(0);
+    setMazeKey(prev => prev + 1);
+    
+    const initialEnemyPos = { x: GRID_SIZE - 2, y: GRID_SIZE - 2 };
+    setEnemyPosition(initialEnemyPos);
+    
+    setTimeout(() => {
+      // Get safe position away from enemy at game start
+      let safePlayerPos;
+      do {
+        safePlayerPos = getRandomPosition();
+      } while (
+        !isPositionValid(safePlayerPos, walls) || 
+        getManhattanDistance(safePlayerPos, initialEnemyPos) < MIN_START_DISTANCE_FROM_ENEMY
+      );
+      
+      setPlayer(safePlayerPos);
+      
+      // Get mystery point position
+      let safePointPos;
+      do {
+        safePointPos = getRandomPosition();
+      } while (safePointPos.x === safePlayerPos.x && safePointPos.y === safePlayerPos.y);
+      
+      setMysteryPoint(safePointPos);
+      setIsGameActive(true);
+      setIsGameOver(false);
+      setIsPlayerTurn(true);
+    }, 500);
+  }, [getRandomPosition, walls]);
+
+  const handlePlayAgain = useCallback(() => {
+    setTimeLeft(30);
+    setScore(0);
+    setPointsCollected(0);
+    setMazeKey(prev => prev + 1);
+    setEnemyPosition({ x: GRID_SIZE - 2, y: GRID_SIZE - 2 });
+    setTimeout(() => {
+      const safePlayerPos = getRandomPosition();
+      setPlayer(safePlayerPos);
+      let safePointPos;
+      do {
+        safePointPos = getRandomPosition();
+      } while (safePointPos.x === safePlayerPos.x && safePointPos.y === safePlayerPos.y);
+      setMysteryPoint(safePointPos);
+      setIsGameOver(false);
+      setIsGameActive(true);
+      setIsPlayerTurn(true);
+    }, 500);
+  }, [getRandomPosition]);
+
+  return (
+    <main className="min-h-screen bg-gray-900 text-white p-4 flex flex-col select-none">
+      <div className="mb-2 sm:mb-4 select-none">
+        <GameStats score={score} timeLeft={timeLeft} pointsCollected={pointsCollected} />
+      </div>
+      <div className="text-center mb-2">
+        {isGameActive && !isGameOver && !isTransitioning && (
+          <div className={`py-1 px-3 rounded-md inline-block ${isPlayerTurn ? 'bg-green-600' : 'bg-red-600'}`}>
+            {isPlayerTurn ? 'Twoja tura' : 'Tura przeciwnika'}
+          </div>
+        )}
+      </div>
+      <div className="flex-1 flex flex-col lg:flex-row items-center justify-center select-none">
+        <div className="mb-4 lg:mb-0 select-none relative">
+          {isTransitioning ? (
+            <div 
+              className="bg-black transition-opacity duration-500 ease-in-out opacity-100"
+              style={{
+                width: `${GRID_SIZE * dynamicCellSize}px`,
+                height: `${GRID_SIZE * dynamicCellSize}px`,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
+            </div>
+          ) : (
+            <GameBoard 
+              key={mazeKey}
+              player={player}
+              mysteryPoint={mysteryPoint}
+              walls={walls}
+              cellSize={dynamicCellSize}
+            >
+              {isClientSide && isGameActive && !isGameOver && !isTransitioning && (
+                <Enemy 
+                  player={player}
+                  walls={walls}
+                  cellSize={dynamicCellSize}
+                  onCatchPlayer={handleGameLose}
+                  isGameActive={isGameActive && !isGameOver}
+                  isPlayerTurn={isPlayerTurn}
+                  onEnemyMoveComplete={handleEnemyMoveComplete}
+                  initialPosition={enemyPosition}
+                  onPositionUpdate={updateEnemyPosition}
+                />
+              )}
+            </GameBoard>
+          )}
+        </div>
+        <div className="lg:ml-6 mt-2 lg:mt-0 select-none lg:hidden md:block">
+          <DirectionalControls 
+            onMove={handleDirectionalControl}
+            currentDirection={lastMoveDirection}
+            layout={isLargeScreen ? 'horizontal' : 'vertical'}
+          />
+        </div>
+      </div>
+      <Instructions showInstructions={showInstructions} onStartGame={handleStartGame} />
+      <GameOver 
+        isGameOver={isGameOver}
+        score={score}
+        pointsCollected={pointsCollected}
+        onPlayAgain={handlePlayAgain}
+        reason={gameOverReason}
+      />
+      <Puzzle 
+      isActive={isPuzzleActive}
+      onSolve={handlePuzzleSolved}
+      onFail={handlePuzzleFailed}
+      onTimeout={handlePuzzleTimeout}
+      difficulty={Math.min(3, Math.ceil(pointsCollected / 3))} // Zwiększanie trudności z czasem
+    />
+    </main>
+  );
+}

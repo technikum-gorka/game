@@ -8,6 +8,13 @@ const BULLET_SPEED = 1;
 const HEALTH_SPAWN_CHANCE = 0.05; // 5% chance for health pickup
 const MAX_HP = 5; // Add this constant at the top with other constants
 const BULLET_SPAWN_CHANCE = 0.1;
+const AMMO_SPAWN_CHANCE = 0.03; // 3% chance for ammo pickup
+
+// Add these constants at the beginning of your component
+const BASE_SPAWN_RATE = 1000; // Base spawn interval in ms
+const MIN_SPAWN_RATE = 400; // Minimum spawn interval
+const DIFFICULTY_INCREASE_INTERVAL = 10; // Every X points increase difficulty
+const SPEED_MULTIPLIER = 0.1; // Speed increase per difficulty level
 
 const commonStyle: CSSProperties = {
   position: "absolute",
@@ -145,46 +152,60 @@ const Page: React.FC = () => {
 
   useEffect(() => {
     if (isPlaying && !gameOver) {
+      // Calculate difficulty level based on score
+      const difficultyLevel = Math.floor(score / DIFFICULTY_INCREASE_INTERVAL);
+      
+      // Calculate spawn rate that decreases with score
+      const currentSpawnRate = Math.max(
+        BASE_SPAWN_RATE - (difficultyLevel * 50),
+        MIN_SPAWN_RATE
+      );
+
+      // Calculate current speed multiplier
+      const currentSpeedMultiplier = 1 + (difficultyLevel * SPEED_MULTIPLIER);
+
       const spawnInterval = setInterval(() => {
         const shouldSpawnHealth = Math.random() < HEALTH_SPAWN_CHANCE;
-
         if (shouldSpawnHealth) {
-          setObstacles((prev) => [
-            ...prev,
-            {
-              id: Date.now(),
-              x: 100,
-              y: Math.random() * 90,
-              type: "health",
-              speed: OBSTACLE_SPEED,
-            },
-          ]);
+          setObstacles(prev => [...prev, {
+            id: Date.now(),
+            x: 100,
+            y: Math.random() * 90,
+            type: "health",
+            speed: OBSTACLE_SPEED * currentSpeedMultiplier
+          }]);
+        } else if (Math.random() < AMMO_SPAWN_CHANCE) {
+          setObstacles(prev => [...prev, {
+            id: Date.now(),
+            x: 100,
+            y: Math.random() * 90,
+            type: "ammo",
+            speed: OBSTACLE_SPEED * currentSpeedMultiplier
+          }]);
         } else {
           const obstacleTypes = [
-            { type: "barrel" as const, speed: OBSTACLE_SPEED },
-            { type: "rocket" as const, speed: OBSTACLE_SPEED * 2 },
-            { type: "bird" as const, speed: OBSTACLE_SPEED * 1.5 },
+            { type: "barrel", speed: OBSTACLE_SPEED * currentSpeedMultiplier },
+            { type: "rocket", speed: (OBSTACLE_SPEED * 2) * currentSpeedMultiplier },
+            { type: "bird", speed: (OBSTACLE_SPEED * 1.5) * currentSpeedMultiplier }
           ];
 
-          const randomIndex = Math.floor(Math.random() * obstacleTypes.length);
-          const obstacleType = obstacleTypes[randomIndex];
+          // Increase spawn chance for faster obstacles with higher difficulty
+          const randomIndex = Math.floor(Math.random() * (obstacleTypes.length + difficultyLevel));
+          const obstacleType = obstacleTypes[Math.min(randomIndex, obstacleTypes.length - 1)];
 
-          setObstacles((prev) => [
-            ...prev,
-            {
-              id: Date.now(),
-              x: 100,
-              y: Math.random() * 90,
-              type: obstacleType.type,
-              speed: obstacleType.speed,
-            },
-          ]);
+          setObstacles(prev => [...prev, {
+            id: Date.now(),
+            x: 100,
+            y: Math.random() * 90,
+            type: obstacleType.type,
+            speed: obstacleType.speed
+          }]);
         }
-      }, 1000);
+      }, currentSpawnRate);
 
       return () => clearInterval(spawnInterval);
     }
-  }, [isPlaying, gameOver]);
+  }, [isPlaying, gameOver, score]);
 
   useEffect(() => {
     if (isPlaying && !gameOver) {
@@ -225,6 +246,8 @@ const Page: React.FC = () => {
           if (deltaX < HITBOX_SIZE && deltaY < HITBOX_SIZE) {
             if (obstacle.type === "health") {
               setHp((prevHp) => Math.min(prevHp + 0.5, MAX_HP));
+            } else if (obstacle.type === "ammo") {
+              setAmmo((prevAmmo) => Math.min(prevAmmo + 1, 5)); // Max 5 ammo
             } else {
               setHp((prevHp) => prevHp - 0.5);
             }
@@ -252,10 +275,13 @@ const Page: React.FC = () => {
     <div
       style={{
         position: "relative",
-        width: "100vw",
-        height: "100vh",
+        width: "100%",
+        height: "calc(100vh - 64px)", // Subtract header height
+        maxWidth: "1200px", // Maximum width
+        margin: "0 auto", // Center horizontally
         background: "lightblue",
         overflow: "hidden",
+        aspectRatio: "16/9", // Maintain aspect ratio
       }}
     >
       <div
@@ -388,6 +414,8 @@ const Page: React.FC = () => {
             ? "🚀"
             : obstacle.type === "bird"
             ? "🦅"
+            : obstacle.type === "ammo"
+            ? "🎯"
             : "❤️"}
         </div>
       ))}

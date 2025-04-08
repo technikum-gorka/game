@@ -18,6 +18,14 @@ export const games: Game[] = [
     image: "",
     category: "Fighting",
     author: "Frodo",
+  },
+  {
+    id:"flappy-bird",
+    title: "Ptaszor",
+    description: "superowy ptasiek",
+    image:"",
+    category: "Zręcznościowa",
+    author: "Bevort",
     isFavorite: true,
   }
   // {
