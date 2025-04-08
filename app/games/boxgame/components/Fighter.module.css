@@ -1,0 +1,387 @@
+.fighter {
+  position: relative;
+  width: 120px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+  transition: transform 0.2s ease-in-out;
+}
+
+.punchingStance {
+  transform: rotate(5deg) translateX(5px);
+}
+
+.head {
+  width: 60px;
+  height: 60px;
+  background-color: var(--fighter-color, #ff6347);
+  border-radius: 50%;
+  position: relative;
+  z-index: 3;
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.eyes {
+  display: flex;
+  justify-content: space-around;
+  width: 70%;
+  margin-top: 15px;
+}
+
+.eye {
+  width: 10px;
+  height: 10px;
+  background-color: #fff;
+  border-radius: 50%;
+  position: relative;
+}
+
+.eye::after {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background-color: #000;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+}
+
+.mouth {
+  width: 20px;
+  height: 5px;
+  background-color: #000;
+  border-radius: 0 0 10px 10px;
+  margin-top: 10px;
+}
+
+.body {
+  width: 80px;
+  height: 100px;
+  background-color: #3498db;
+  border-radius: 40px 40px 20px 20px;
+  margin-top: -10px;
+  z-index: 2;
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.arms {
+  display: flex;
+  justify-content: space-between;
+  width: 90px;
+  position: absolute;
+  top: 50px;
+  left: 60%;
+  transform: translateX(-50%);
+  z-index: 3;
+  transform: rotate(-70deg);
+}
+
+.armContainer {
+  position: relative;
+  height: 120px;
+  width: 30px;
+  transform-origin: top center;
+}
+
+.upperArm {
+  width: 20px;
+  height: 50px;
+  background-color: #3498db;
+  position: absolute;
+  top: 0;
+  left: 5px;
+  transform-origin: top center;
+  transform: rotate(15deg);
+  z-index: 3;
+}
+
+.foreArm {
+  width: 18px;
+  height: 45px;
+  background-color: #3498db;
+  position: absolute;
+  top: 45px;
+  left: 1px;
+  transform-origin: top center;
+  transform: rotate(-50deg);
+  z-index: 3;
+}
+
+.glove {
+  width: 30px;
+  height: 30px;
+  background-color: #e74c3c;
+  border-radius: 50%;
+  position: absolute;
+  top: 40px;
+  left: -6px;
+  z-index: 3;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Animacja oddychania */
+@keyframes breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(2px); }
+}
+
+/* Animacja lekkiego kołysania w pozycji spoczynkowej */
+.armContainer:nth-child(1) .upperArm {
+  animation: idleSwayLeft 3s ease-in-out infinite;
+}
+
+.armContainer:nth-child(2) .upperArm {
+  animation: idleSwayRight 3s ease-in-out infinite;
+}
+
+@keyframes idleSwayLeft {
+  0%, 100% { transform: rotate(15deg); }
+  50% { transform: rotate(10deg); }
+}
+
+@keyframes idleSwayRight {
+  0%, 100% { transform: rotate(15deg); }
+  50% { transform: rotate(20deg); }
+}
+
+/* JAB - szybki prosty cios lewą ręką */
+@keyframes jabUpperArm {
+  0% { transform: rotate(15deg); }
+  10% { transform: rotate(10deg); }
+  40% { transform: rotate(-5deg) translateY(-5px); } /* Dodano ruch w górę */
+  60% { transform: rotate(-5deg); }
+  100% { transform: rotate(15deg); }
+}
+
+@keyframes jabForeArm {
+  0% { transform: rotate(-50deg); }
+  10% { transform: rotate(-55deg); }
+  40% { transform: rotate(-5deg); }
+  60% { transform: rotate(-5deg); }
+  100% { transform: rotate(-50deg); }
+}
+
+@keyframes jabGlove {
+  0% { transform: translateX(0) translateY(0) scale(1); }
+  10% { transform: translateX(-5px) translateY(0) scale(1); }
+  40% { transform: translateX(85px) translateY(-15px) scale(0.9); }
+  45% { transform: translateX(87px) translateY(-15px) scale(1.1); }
+  60% { transform: translateX(85px) translateY(-15px) scale(1); }
+  100% { transform: translateX(0) translateY(0) scale(1); }
+}
+
+/* CROSS - silny prosty cios prawą ręką */
+@keyframes crossUpperArm {
+  0% { transform: rotate(15deg); }
+  15% { transform: rotate(25deg); }
+  50% { transform: rotate(-10deg) translateY(-5px); } /* Dodano ruch w górę */
+  70% { transform: rotate(-10deg); }
+  100% { transform: rotate(15deg); }
+}
+
+@keyframes crossForeArm {
+  0% { transform: rotate(-50deg); }
+  15% { transform: rotate(-60deg); }
+  50% { transform: rotate(0deg); }
+  70% { transform: rotate(0deg); }
+  100% { transform: rotate(-50deg); }
+}
+
+@keyframes crossGlove {
+  0% { transform: translateX(0) translateY(0) scale(1); }
+  15% { transform: translateX(-10px) translateY(0) scale(1); }
+  50% { transform: translateX(90px) translateY(-15px) scale(0.85); }
+  55% { transform: translateX(92px) translateY(-15px) scale(1.15); }
+  70% { transform: translateX(90px) translateY(-15px) scale(1); }
+  100% { transform: translateX(0) translateY(0) scale(1); }
+}
+
+/* HOOK - boczny sierpowy cios lewą ręką */
+@keyframes hookUpperArm {
+  0% { transform: rotate(15deg); }
+  20% { transform: rotate(5deg); }
+  50% { transform: rotate(45deg) translateY(-10px); }
+  70% { transform: rotate(45deg) translateY(-10px); }
+  100% { transform: rotate(15deg); }
+}
+
+@keyframes hookForeArm {
+  0% { transform: rotate(-50deg); }
+  20% { transform: rotate(-60deg); }
+  50% { transform: rotate(-10deg); }
+  70% { transform: rotate(-10deg); }
+  100% { transform: rotate(-50deg); }
+}
+
+@keyframes hookGlove {
+  0% { transform: translateX(0) translateY(0) scale(1); }
+  20% { transform: translateX(-5px) translateY(0) scale(1); }
+  50% { transform: translateX(60px) translateY(-15px) scale(0.9); }
+  55% { transform: translateX(62px) translateY(-17px) scale(1.1); }
+  70% { transform: translateX(60px) translateY(-15px) scale(1); }
+  100% { transform: translateX(0) translateY(0) scale(1); }
+}
+
+/* UPPERCUT - cios z dołu prawą ręką */
+@keyframes uppercutUpperArm {
+  0% { transform: rotate(15deg); }
+  20% { transform: rotate(25deg) translateY(10px); }
+  60% { transform: rotate(-20deg) translateY(-15px); }
+  75% { transform: rotate(-20deg) translateY(-15px); }
+  100% { transform: rotate(15deg); }
+}
+
+@keyframes uppercutForeArm {
+  0% { transform: rotate(-50deg); }
+  20% { transform: rotate(-90deg); }
+  60% { transform: rotate(-20deg); }
+  75% { transform: rotate(-20deg); }
+  100% { transform: rotate(-50deg); }
+}
+
+@keyframes uppercutGlove {
+  0% { transform: translateY(0) scale(1); }
+  20% { transform: translateY(20px) scale(1); }
+  60% { transform: translateY(-50px) translateX(60px) scale(0.9); }
+  65% { transform: translateY(-53px) translateX(62px) scale(1.1); }
+  75% { transform: translateY(-50px) translateX(60px) scale(1); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* BODY SHOT - cios w korpus lewą ręką */
+@keyframes bodyShotUpperArm {
+  0% { transform: rotate(15deg); }
+  20% { transform: rotate(5deg); }
+  50% { transform: rotate(-10deg) translateY(20px); }
+  70% { transform: rotate(-10deg) translateY(20px); }
+  100% { transform: rotate(15deg); }
+}
+
+@keyframes bodyShotForeArm {
+  0% { transform: rotate(-50deg); }
+  20% { transform: rotate(-60deg); }
+  50% { transform: rotate(-10deg); }
+  70% { transform: rotate(-10deg); }
+  100% { transform: rotate(-50deg); }
+}
+
+@keyframes bodyShotGlove {
+  0% { transform: translateX(0) translateY(0) scale(1); }
+  20% { transform: translateX(-5px) translateY(0) scale(1); }
+  50% { transform: translateX(85px) translateY(15px) scale(0.9); }
+  55% { transform: translateX(87px) translateY(15px) scale(1.1); }
+  70% { transform: translateX(85px) translateY(15px) scale(1); }
+  100% { transform: translateX(0) translateY(0) scale(1); }
+}
+
+/* HAYMAKER - potężny zamaszysty cios prawą ręką */
+@keyframes haymakerUpperArm {
+  0% { transform: rotate(15deg); }
+  25% { transform: rotate(60deg) translateX(-10px); }
+  60% { transform: rotate(-20deg) translateX(10px); }
+  75% { transform: rotate(-20deg) translateX(10px); }
+  100% { transform: rotate(15deg); }
+}
+
+@keyframes haymakerForeArm {
+  0% { transform: rotate(-50deg); }
+  25% { transform: rotate(-90deg); }
+  60% { transform: rotate(10deg); }
+  75% { transform: rotate(10deg); }
+  100% { transform: rotate(-50deg); }
+}
+
+@keyframes haymakerGlove {
+  0% { transform: translateX(0) translateY(0) rotate(0deg) scale(1); }
+  25% { transform: translateX(-20px) translateY(0) rotate(-45deg) scale(1); }
+  60% { transform: translateX(85px) translateY(-20px) rotate(45deg) scale(0.8); }
+  65% { transform: translateX(87px) translateY(-20px) rotate(50deg) scale(1.2); }
+  75% { transform: translateX(85px) translateY(-20px) rotate(45deg) scale(1); }
+  100% { transform: translateX(0) translateY(0) rotate(0deg) scale(1); }
+}
+
+/* Przypisanie animacji do klas */
+.jabUpperArmAnimation {
+  animation: jabUpperArm 0.6s ease-in-out;
+}
+
+.jabForeArmAnimation {
+  animation: jabForeArm 0.6s ease-in-out;
+}
+
+.jabGloveAnimation {
+  animation: jabGlove 0.6s ease-in-out;
+}
+
+.crossUpperArmAnimation {
+  animation: crossUpperArm 0.7s ease-in-out;
+}
+
+.crossForeArmAnimation {
+  animation: crossForeArm 0.7s ease-in-out;
+}
+
+.crossGloveAnimation {
+  animation: crossGlove 0.7s ease-in-out;
+}
+
+.hookUpperArmAnimation {
+  animation: hookUpperArm 0.8s ease-in-out;
+}
+
+.hookForeArmAnimation {
+  animation: hookForeArm 0.8s ease-in-out;
+}
+
+.hookGloveAnimation {
+  animation: hookGlove 0.8s ease-in-out;
+}
+
+.uppercutUpperArmAnimation {
+  animation: uppercutUpperArm 0.8s ease-in-out;
+}
+
+.uppercutForeArmAnimation {
+  animation: uppercutForeArm 0.8s ease-in-out;
+}
+
+.uppercutGloveAnimation {
+  animation: uppercutGlove 0.8s ease-in-out;
+}
+
+.bodyShotUpperArmAnimation {
+  animation: bodyShotUpperArm 0.7s ease-in-out;
+}
+
+.bodyShotForeArmAnimation {
+  animation: bodyShotForeArm 0.7s ease-in-out;
+}
+
+.bodyShotGloveAnimation {
+  animation: bodyShotGlove 0.7s ease-in-out;
+}
+
+.haymakerUpperArmAnimation {
+  animation: haymakerUpperArm 0.9s ease-in-out;
+}
+
+.haymakerForeArmAnimation {
+  animation: haymakerForeArm 0.9s ease-in-out;
+}
+
+.haymakerGloveAnimation {
+  animation: haymakerGlove 0.9s ease-in-out;
+}

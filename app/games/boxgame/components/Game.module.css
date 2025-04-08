@@ -1,0 +1,123 @@
+.gameContainer {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: black;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.gameInfo {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.healthBars {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.arena {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  background-color: #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.fighterWrapper, .enemyWrapper {
+  position: relative;
+  width: 150px;
+  height: 200px;
+}
+
+.fighterWrapper {
+  right: -10px; /* Przybliżenie postaci gracza */
+}
+
+.enemyWrapper {
+  left: -10px; /* Przybliżenie postaci przeciwnika */
+  transform: scaleX(-1); /* Odbicie lustrzane przeciwnika */
+}
+
+.arena::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.1) 100%),
+    repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(0,0,0,0.05) 20px, rgba(0,0,0,0.05) 40px);
+  z-index: 1;
+}
+
+.messageBox {
+  background-color:  #0055aa;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  color:white;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  min-height: 50px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.resetButton {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  background-color: #ff4500;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.resetButton:hover {
+  background-color: #e03e00;
+}
+
+@keyframes damage {
+  0% { background-color: rgba(255, 0, 0, 0.3); }
+  100% { background-color: transparent; }
+}
+
+/* Dodatkowe style dla animacji */
+.fighter, .enemy {
+  transition: transform 0.3s ease-in-out;
+}
+
+.fighter[data-animation="hit"] {
+  animation: fighterHit 0.3s ease-in-out;
+}
+
+.enemy[data-animation="hit"] {
+  animation: enemyHit 0.3s ease-in-out;
+}
+
+@keyframes fighterHit {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(10px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes enemyHit {
+  0% { transform: translateX(0) scaleX(-1); }
+  50% { transform: translateX(-10px) scaleX(-1); }
+  100% { transform: translateX(0) scaleX(-1); }
+}

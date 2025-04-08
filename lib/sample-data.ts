@@ -11,6 +11,15 @@ export const games: Game[] = [
     isFavorite: true,
   },
   {
+    id: "boxgame",
+    title: "Boxing clicker",
+    description:
+      "Zawalcz z coraz trudniejszymi przeciwnikami, używając power-upów i odpowiedniej taktyki.",
+    image: "",
+    category: "Fighting",
+    author: "Frodo",
+  },
+  {
     id:"flappy-bird",
     title: "Ptaszor",
     description: "superowy ptasiek",
